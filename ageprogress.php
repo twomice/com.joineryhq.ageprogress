@@ -192,64 +192,6 @@ function _ageprogress_buildForm_fields($formName, &$form = NULL) {
       'ageprogress_max_age',
     ];
   }
-  elseif ($formName == 'CRM_Event_Form_Registration_AdditionalParticipant') {
-    if ($form !== NULL) {
-      $ageprogressEventSettings = _ageprogressGetEventSettings($form->_eventId);
-      if (CRM_Utils_Array::value('is_prompt_related', $ageprogressEventSettings)) {
-        $userCid = CRM_Core_Session::singleton()->getLoggedInContactID();
-        $firstRelationship = CRM_Contact_BAO_Relationship::getRelationship($userCid, 3, 1, NULL, NULL, NULL, NULL, TRUE);
-        if ($firstRelationship) {
-          // EntityRef field for related contacts.
-          $entityRefParams = [
-            'create' => FALSE,
-            'api' => [
-              'params' => [
-                // This param is watched for in CRM_Groupreg_APIWrappers_Contact::fromApiInput();
-                'isGroupregPrefill' => TRUE,
-              ],
-              'extra' => [
-                // These extra parameters are provided in CRM_Groupreg_APIWrappers_Contact::toApiOutput()
-                // and expected by the select2 change handler in CRM_Event_Form_Registration_AdditionalParticipant-not-self-reg.js
-                'relationship_type_id',
-                'rtype',
-                'relationship_id',
-              ],
-            ],
-          ];
-          $form->addEntityRef('ageprogressPrefillContact', E::ts('Select a person'), $entityRefParams);
-
-          // Hidden field to hold id of an existing relationship.
-          $form->addElement('hidden', 'ageprogressRelationshipId', '', ['id' => 'ageprogressRelationshipId']);
-
-          CRM_Core_Resources::singleton()->addScriptFile('com.joineryhq.ageprogress', 'js/CRM_Event_Form_Registration_AdditionalParticipant-is-prompt-related.js');
-        }
-      }
-
-      // Select2 list of relationship types.
-      // TODO: support limitation of these types (and possibly re-labeling of them)
-      // in the UI.
-      $relationshipTypeParams = [
-        'contact_id' => $userCid,
-        'contact_type' => 'Individual',
-        'is_form' => TRUE,
-      ];
-      $relationshipTypeOptions = CRM_Contact_BAO_Relationship::buildOptions('relationship_type_id', NULL, $relationshipTypeParams);
-      $form->add('select', 'ageprogressRelationshipType', E::ts('My relationship to this person'), $relationshipTypeOptions, TRUE, array('class' => 'crm-select2', 'style' => 'width: 100%;', 'placeholder' => '- ' . E::ts('SELECT') . '-'));
-    }
-    $fieldNames = [
-      'ageprogressPrefillContact',
-      'ageprogressRelationshipType',
-      'ageprogressRelationshipId',
-    ];
-  }
-  elseif ($formName == 'CRM_Price_Form_Field') {
-    if ($form !== NULL) {
-      $form->addElement('checkbox', 'is_hide_non_participant', E::ts('Hide from non-participating primary registrants?'));
-    }
-    $fieldNames = [
-      'is_hide_non_participant',
-    ];
-  }
 
   // Use JS to inject any form element descriptions.
   if (!empty($descriptions)) {
