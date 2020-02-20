@@ -16,9 +16,58 @@ function ageprogress_civicrm_buildForm($formName, &$form) {
   }
 
   if ($formName == 'CRM_Admin_Form_ContactType') {
-
+    $contactTypeId = $form->getVar('_id');
+    $contactTypeSettings = _ageprogressGetContactTypeSettings($contactTypeId);
+    $defaults = [];
+    if (!empty($contactTypeSettings)) {
+      foreach ($fieldNames as $fieldName) {
+        $defaults[$fieldName] = $contactTypeSettings[$fieldName];
+      }
+    }
+    $form->setDefaults($defaults);
   }
 };
+
+/**
+ * Implements hook_civicrm_buildForm().
+ *
+ * @link https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_postProcess/
+ */
+function ageprogress_civicrm_postProcess($formName, &$form) {
+  if ($formName == 'CRM_Admin_Form_ContactType') {
+    if ($form->getVar('_parentId')) {
+      // Here we need to save all of our injected fields on this form.
+
+      // Get a list of the injected fields for this form.
+      $fieldNames = _ageprogress_buildForm_fields($formName);
+
+      $contactTypeId = $form->getVar('_id');
+
+      // Get the existing settings record for this subtype, if any.
+      $ageprogressContactTypeGet = \Civi\Api4\AgeprogressContactType::get()
+        ->addWhere('contact_type_id', '=', $contactTypeId)
+        ->execute()
+        ->first();
+      // If existing record wasn't found, we'll create.
+      if (empty($ageprogressContactTypeGet)) {
+        $ageprogressContactType = \Civi\Api4\AgeprogressContactType::create()
+          ->addValue('contact_type_id', $contactTypeId);
+      }
+      // If it was found, we'll just update it.
+      else {
+        $ageprogressContactType = \Civi\Api4\AgeprogressContactType::update()
+          ->addWhere('id', '=', $ageprogressContactTypeGet['id']);
+      }
+      // Whether create or update, add the values of our injected fields.
+      foreach ($fieldNames as $fieldName) {
+        $ageprogressContactType->addValue($fieldName, $form->_submitValues[$fieldName]);
+      }
+      // Create/update settings record.
+      $ageprogressContactType
+        ->execute();
+    }
+  }
+}
 
 /**
  * Implements hook_civicrm_config().
@@ -171,8 +220,7 @@ function _ageprogress_buildForm_fields($formName, &$form = NULL) {
   $descriptions = [];
   if ($formName == 'CRM_Admin_Form_ContactType') {
     if ($form !== NULL) {
-      $parentId = $form->getVar('_parentId');
-      if ($parentId) {
+      if ($form->getVar('_parentId')) {
         $form->addElement('checkbox', 'is_ageprogress', E::ts('Progress by age'));
         $descriptions['is_ageprogress'] = E::ts('Should this sub-type be included in "Sub-Type by Age" processing?');
 
@@ -211,4 +259,21 @@ function _ageprogress_add_bhfe(array $elementNames, CRM_Core_Form &$form) {
     $bhfe[] = $elementName;
   }
   $form->assign('beginHookFormElements', $bhfe);
+}
+
+/**
+ * Shorthand to retrieve settings per contact type
+ *
+ */
+function _ageprogressGetContactTypeSettings($contactTypeId) {
+  static $contactTypeSettings = [];
+  if (!in_array($contactTypeId, $contactTypeSettings)) {
+    // Add fields to manage "primary is attending" for this registration.
+    $contactTypeSettings[$contactTypeId] = \Civi\Api4\AgeprogressContactType::get()
+      ->addWhere('contact_type_id', '=', $contactTypeId)
+      ->execute()
+      ->first();
+  }
+
+  return $contactTypeSettings[$contactTypeId];
 }

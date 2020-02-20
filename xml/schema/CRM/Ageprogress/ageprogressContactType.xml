@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="iso-8859-1" ?>
+
+<table>
+  <base>CRM/Ageprogress</base>
+  <class>AgeprogressContactType</class>
+  <name>civicrm_ageprogress_contact_type</name>
+  <comment>Additional properties for contact types</comment>
+  <log>true</log>
+
+  <field>
+    <name>id</name>
+    <type>int unsigned</type>
+    <required>true</required>
+    <comment>Unique AgeprogressContactType ID</comment>
+  </field>
+  <primaryKey>
+    <name>id</name>
+    <autoincrement>true</autoincrement>
+  </primaryKey>
+
+  <field>
+    <name>contact_type_id</name>
+    <type>int unsigned</type>
+    <comment>FK to Contact Type</comment>
+  </field>
+  <foreignKey>
+    <name>contact_type_id</name>
+    <table>civicrm_contact_type</table>
+    <key>id</key>
+    <onDelete>CASCADE</onDelete>
+  </foreignKey>  
+
+  <field>
+    <title>Progress by age</title>
+    <name>is_ageprogress</name>
+    <comment>Should this sub-type be included in "Sub-Type by Age" processing?</comment>
+    <type>boolean</type>
+    <required>true</required>
+    <default>0</default>
+  </field>
+
+  <field>
+    <title>Final sub-type</title>
+    <name>is_ageprogress_final</name>
+    <comment>Is this the final sub-type in the progression?</comment>
+    <type>boolean</type>
+    <required>true</required>
+    <default>0</default>
+  </field>
+
+  <field>
+    <title>Maximum age</title>
+    <name>ageprogress_max_age</name>
+    <comment>Contacts calculated to be above this age will be automatically removed from this sub-type.</comment>
+    <type>int unsigned</type>
+    <required>true</required>
+    <default>0</default>
+  </field>
+
+</table>

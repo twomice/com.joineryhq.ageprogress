@@ -473,5 +473,11 @@ function _ageprogress_civix_civicrm_alterSettingsFolders(&$metaDataFolders = NUL
 
 function _ageprogress_civix_civicrm_entityTypes(&$entityTypes) {
   $entityTypes = array_merge($entityTypes, array (
+    'CRM_Ageprogress_DAO_AgeprogressContactType' =>
+    array (
+      'name' => 'AgeprogressContactType',
+      'class' => 'CRM_Ageprogress_DAO_AgeprogressContactType',
+      'table' => 'civicrm_ageprogress_contact_type',
+    ),
   ));
 }
