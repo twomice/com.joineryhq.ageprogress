@@ -1,4 +1,4 @@
-# com.joineryhq.ageprogress
+# CiviCRM: Sub-type progress by age (com.joineryhq.ageprogress)
 
 This extension will automatically progress contacts through a series of sub-types 
 based on age, according to configurable rules. It provides a daily scheduled job 
