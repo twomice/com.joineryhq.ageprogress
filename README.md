@@ -1,15 +1,19 @@
 # com.joineryhq.ageprogress
 
-![Screenshot](/images/screenshot.png)
-
-(*FIXME: In one or two paragraphs, describe what the extension does and why one would download it. *)
+This extension will automatically progress contacts through a series of sub-types 
+based on age, according to configurable rules. It provides a daily scheduled job 
+to process changes, and performs updates on any new contact or when birth date 
+is changed. It also provides hooks for altering any or all of these:
+* procedure for age calculation;
+* procedure for determining whether to perform updates today;
+* additional actions upon update completion.
 
 The extension is licensed under [GPL-3.0](LICENSE.txt).
 
 ## Requirements
 
 * PHP v7.0+
-* CiviCRM (*FIXME: Version number*)
+* CiviCRM 5.0
 
 ## Installation (Web UI)
 
