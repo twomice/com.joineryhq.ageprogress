@@ -20,7 +20,7 @@ class CRM_Ageprogress_Util {
     );
     $this->ageCalcCallback = $callback;
   }
-  
+
   public static function singleton(CRM_Ageprogress_Utils $instance = NULL) {
     if ($instance !== NULL) {
       self::$_singleton = $instance;
@@ -44,7 +44,7 @@ class CRM_Ageprogress_Util {
   /**
    * Remove from and add to the given array of sub-types, based on the given age
    * and the configuration of sub-types having is_ageprogress.
-   * 
+   *
    * @param Array $subTypes One or more contact sub-type names.
    * @param Int $age Age to use in calculating sub-types.
    * @return Array Modified list of contact sub-type names.
@@ -54,11 +54,11 @@ class CRM_Ageprogress_Util {
       ->addWhere('is_ageprogress', '=', 1)
       ->addOrderBy('ageprogress_max_age', 'ASC')
       ->setChain([
-        'contact_type' => ['ContactType', 'get', ['where' => [['id', '=', '$contact_type_id']]], 0]
+        'contact_type' => ['ContactType', 'get', ['where' => [['id', '=', '$contact_type_id']]], 0],
       ])
       ->execute();
-    $finalSubTypeName = null;
-    $currentSubTypeName = null;
+    $finalSubTypeName = NULL;
+    $currentSubTypeName = NULL;
     foreach ($ageprogressSubTypes as $ageprogressSubType) {
       $subTypeName = $ageprogressSubType['contact_type']['name'];
       if ($ageprogressSubType['is_ageprogress_final']) {
@@ -83,4 +83,5 @@ class CRM_Ageprogress_Util {
     }
     return array_unique($subTypes);
   }
+
 }
