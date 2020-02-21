@@ -10,7 +10,7 @@ use CRM_Ageprogress_ExtensionUtil as E;
  */
 function ageprogress_civicrm_pageRun(&$page) {
   $pageName = $page->getVar('_name');
-  if ($pageName == 'CRM_Admin_Page_ContactType') {
+  if ($pageName == 'CRM_Admin_Page_ContactType' && $page->getVar('_action') == CRM_Core_Action::BROWSE) {
     $ageprogressSubTypes = Civi\Api4\AgeprogressContactType::get()
       ->addWhere('is_ageprogress', '=', 1)
       ->execute();
@@ -23,7 +23,13 @@ function ageprogress_civicrm_pageRun(&$page) {
     if ($jsVars['isAgeproggressTypesIds']) {
       CRM_Core_Resources::singleton()->addScriptFile('com.joineryhq.ageprogress', 'js/CRM_Admin_Page_ContactType.js');
       CRM_Core_Resources::singleton()->addVars('ageprogress', $jsVars);
-      CRM_Core_Session::setStatus(E::ts('Some contact types are configured for "Sub-Type by Age" processing (marked as <i class="crm-i fa-bolt"></i> in the list below); <a href=""> click here for an overview of them</a>.'), E::ts('Sub-Type by Age'), 'info', ['expires' => 0]);
+      $text = E::ts(
+        'Some contact types are configured for "Sub-Type by Age" processing (marked as <i class="crm-i fa-bolt"></i> in the list below); <a href="%1"> click here for an overview of them</a>.',
+        [
+          '1' => CRM_Utils_System::url('civicrm/admin/options/subtype/ageprogress', 'reset=1', NULL, NULL, FALSE, FALSE, TRUE),
+        ]
+      );
+      CRM_Core_Session::setStatus($text, E::ts('Sub-Type by Age'), 'info', ['expires' => 0]);
     }
   }
 }

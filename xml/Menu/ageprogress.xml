@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<menu>
+  <item>
+    <path>civicrm/admin/options/subtype/ageprogress</path>
+    <page_callback>CRM_Ageprogress_Page_AgeprogressTypes</page_callback>
+    <title>"Age Progress" Contact Types</title>
+    <access_arguments>access CiviCRM</access_arguments>
+  </item>
+</menu>
