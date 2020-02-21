@@ -53,8 +53,7 @@
     <name>ageprogress_max_age</name>
     <comment>Contacts calculated to be above this age will be automatically removed from this sub-type.</comment>
     <type>int unsigned</type>
-    <required>true</required>
-    <default>0</default>
+    <required>false</required>
   </field>
 
 </table>

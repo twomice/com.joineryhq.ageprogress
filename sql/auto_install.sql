@@ -85,7 +85,7 @@ CREATE TABLE `civicrm_ageprogress_contact_type` (
      `contact_type_id` int unsigned    COMMENT 'FK to Contact Type',
      `is_ageprogress` tinyint NOT NULL  DEFAULT 0 COMMENT 'Should this sub-type be included in \"Sub-Type by Age\" processing?',
      `is_ageprogress_final` tinyint NOT NULL  DEFAULT 0 COMMENT 'Is this the final sub-type in the progression?',
-     `ageprogress_max_age` int unsigned NOT NULL  DEFAULT 0 COMMENT 'Contacts calculated to be above this age will be automatically removed from this sub-type.' 
+     `ageprogress_max_age` int unsigned NULL   COMMENT 'Contacts calculated to be above this age will be automatically removed from this sub-type.' 
 ,
         PRIMARY KEY (`id`)
  
