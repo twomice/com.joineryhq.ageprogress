@@ -7,7 +7,7 @@ class CRM_Ageprogress_Page_AgeprogressTypes extends CRM_Core_Page {
     CRM_Core_Session::singleton()->pushUserContext('civicrm/admin/options/subtype/ageprogress?reset=1');
     $ageprogressSubTypes = Civi\Api4\AgeprogressContactType::get()
       ->addWhere('is_ageprogress', '=', 1)
-      ->addOrderBy('is_ageprogress_final', 'DESC')
+      ->addOrderBy('is_ageprogress_final', 'ASC')
       ->addOrderBy('ageprogress_max_age', 'ASC')
       ->setChain([
         'contact_type' => ['ContactType', 'get', ['where' => [['id', '=', '$contact_type_id']]], 0],
