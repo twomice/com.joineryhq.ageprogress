@@ -279,14 +279,13 @@ function _ageprogressGetContactTypeSettings($contactTypeId) {
   return $contactTypeSettings[$contactTypeId];
 }
 
-
 /**
  * Validation rules for the CRM_Admin_Form_ContactType form, as called for by
  * HTML_Quickform::addFormRule().
  *
- * @param array $values
- *   Posted values of the form.
- *
+ * @param array $submitValues
+ * @param array $submitFiles
+ * @param object $form
  * @return array
  *   list of errors to be posted back to the form
  */
@@ -302,7 +301,7 @@ function _ageprogress_CRM_Admin_Form_ContactType_formRule($submitValues, $submit
       ->addWhere('ageprogress_max_age', '=', $submitValues['ageprogress_max_age'])
       ->execute()
       ->first();
-    if($otherMaxAgeType) {
+    if ($otherMaxAgeType) {
       // If found, generate an error. Get some info about the other type so
       // we can report something useful about it.
       $otherContactType = Civi\Api4\ContactType::get()
