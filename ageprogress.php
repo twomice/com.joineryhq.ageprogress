@@ -4,9 +4,34 @@ require_once 'ageprogress.civix.php';
 use CRM_Ageprogress_ExtensionUtil as E;
 
 /**
- * Implements hook_civicrm_post().
+ * Implements hook_civicrm_pageRun().
  *
- * @link https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_post/
+ * @link https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_pageRun/
+ */
+function ageprogress_civicrm_pageRun(&$page) {
+  $pageName = $page->getVar('_name');
+  if ($pageName == 'CRM_Admin_Page_ContactType') {
+    $ageprogressSubTypes = Civi\Api4\AgeprogressContactType::get()
+      ->addWhere('is_ageprogress', '=', 1)
+      ->execute();
+    $jsVars = [
+      'isAgeproggressTypesIds' => [],
+    ];
+    foreach ($ageprogressSubTypes as $ageprogressSubType) {
+      $jsVars['isAgeproggressTypesIds'][] = $ageprogressSubType['contact_type_id'];
+    }
+    if ($jsVars['isAgeproggressTypesIds']) {
+      CRM_Core_Resources::singleton()->addScriptFile('com.joineryhq.ageprogress', 'js/CRM_Admin_Page_ContactType.js');
+      CRM_Core_Resources::singleton()->addVars('ageprogress', $jsVars);
+      CRM_Core_Session::setStatus(E::ts('Some contact types are configured for "Sub-Type by Age" processing (marked as <i class="crm-i fa-bolt"></i> in the list below); <a href=""> click here for an overview of them</a>.'), E::ts('Sub-Type by Age'), 'info', ['expires' => 0]);
+    }
+  }
+}
+
+/**
+ * Implements hook_civicrm_pre().
+ *
+ * @link https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_pre/
  */
 function ageprogress_civicrm_pre($op, $objectName, $id, &$params) {
   // On Create or Edit of any Inividual, modify sub-types based on age.
