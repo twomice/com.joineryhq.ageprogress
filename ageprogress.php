@@ -229,7 +229,8 @@ function _ageprogress_buildForm_fields($formName, &$form = NULL) {
 
         $form->addElement('text', 'ageprogress_max_age', E::ts('Maximum age'));
         $descriptions['ageprogress_max_age'] = E::ts('Contacts calculated to be above this age will be automatically removed from this sub-type.');
-        $form->addRule('ageprogress_max_age', ts('Maximum age should be a positive number'), 'positiveInteger');
+        $form->addRule('ageprogress_max_age', E::ts('Maximum age should be a positive number'), 'positiveInteger');
+        $form->addFormRule('_ageprogress_CRM_Admin_Form_ContactType_formRule', $form);
 
         CRM_Core_Resources::singleton()->addScriptFile('com.joineryhq.ageprogress', 'js/CRM_Admin_Form_ContactType-has-parent.js');
       }
@@ -276,4 +277,43 @@ function _ageprogressGetContactTypeSettings($contactTypeId) {
   }
 
   return $contactTypeSettings[$contactTypeId];
+}
+
+
+/**
+ * Validation rules for the CRM_Admin_Form_ContactType form, as called for by
+ * HTML_Quickform::addFormRule().
+ *
+ * @param array $values
+ *   Posted values of the form.
+ *
+ * @return array
+ *   list of errors to be posted back to the form
+ */
+function _ageprogress_CRM_Admin_Form_ContactType_formRule($submitValues, $submitFiles, $form) {
+  $errors = array();
+
+  // ONly bother if is_ageprogress is true.
+  if ($submitValues['is_ageprogress']) {
+    $contactTypeId = $form->getVar('_id');
+    // Find any other contact type that has the same 'max_age' setting.
+    $otherMaxAgeType = \Civi\Api4\AgeprogressContactType::get()
+      ->addWhere('contact_type_id', '!=', $contactTypeId)
+      ->addWhere('ageprogress_max_age', '=', $submitValues['ageprogress_max_age'])
+      ->execute()
+      ->first();
+    if($otherMaxAgeType) {
+      // If found, generate an error. Get some info about the other type so
+      // we can report something useful about it.
+      $otherContactType = Civi\Api4\ContactType::get()
+        ->addWhere('id', '=', $otherMaxAgeType['contact_type_id'])
+        ->execute()
+        ->first();
+      $errors['ageprogress_max_age'] = E::ts('The maxiumum age must be unique; the value "%1" is already in use in this Contact Type: %2', [
+        '1' => $submitValues['ageprogress_max_age'],
+        '2' => $otherContactType['label'],
+      ]);
+    }
+  }
+  return empty($errors) ? TRUE : $errors;
 }
