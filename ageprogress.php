@@ -4,6 +4,38 @@ require_once 'ageprogress.civix.php';
 use CRM_Ageprogress_ExtensionUtil as E;
 
 /**
+ * Implements hook_civicrm_post().
+ *
+ * @link https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_post/
+ */
+function ageprogress_civicrm_pre($op, $objectName, $id, &$params) {
+  // On Create or Edit of any Inividual, modify sub-types based on age.
+  if ($objectName == 'Individual'
+    && (
+      $op == 'create'
+      || $op == 'edit'
+    )
+  ) {
+    $util = CRM_Ageprogress_Util::singleton();
+    // Get birthdate from params if given.
+    $birthDate = CRM_Utils_Array::value('birth_date', $params);
+    if (!$birthDate && $id) {
+      // If there is no birthdate, and this is an existing contact, try to get
+      // their birthdate from the contat record.
+      $contact = civicrm_api3('contact', 'getSingle', ['id' => $id]);
+      $birthDate = CRM_Utils_Array::value('birth_date', $contact);
+    }
+    // If we can't get the birthdate from params or from id, we just don't have
+    // it, so nothing to do. But if we do have it, calculate age and adjust
+    // sub-types.
+    if ($birthDate) {
+      $age = $util->calculateAge($birthDate);
+      $params['contact_sub_type'] = CRM_Ageprogress_Util::alterSubTypes($params['contact_sub_type'], $age);
+    }
+  }
+}
+
+/**
  * Implements hook_civicrm_buildForm().
  *
  * @link https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_buildForm/
@@ -220,7 +252,8 @@ function _ageprogress_buildForm_fields($formName, &$form = NULL) {
   $descriptions = [];
   if ($formName == 'CRM_Admin_Form_ContactType') {
     if ($form !== NULL) {
-      if ($form->getVar('_parentId')) {
+      // Only do this for sub-types of Individual.
+      if ($form->getVar('_parentId') == 1) {
         $form->addElement('checkbox', 'is_ageprogress', E::ts('Progress by age'));
         $descriptions['is_ageprogress'] = E::ts('Should this sub-type be included in "Sub-Type by Age" processing?');
 
@@ -292,7 +325,7 @@ function _ageprogressGetContactTypeSettings($contactTypeId) {
 function _ageprogress_CRM_Admin_Form_ContactType_formRule($submitValues, $submitFiles, $form) {
   $errors = array();
 
-  // ONly bother if is_ageprogress is true.
+  // Only bother if is_ageprogress is true.
   if ($submitValues['is_ageprogress']) {
     $contactTypeId = $form->getVar('_id');
     // Find any other contact type that has the same 'max_age' setting.
@@ -308,10 +341,30 @@ function _ageprogress_CRM_Admin_Form_ContactType_formRule($submitValues, $submit
         ->addWhere('id', '=', $otherMaxAgeType['contact_type_id'])
         ->execute()
         ->first();
-      $errors['ageprogress_max_age'] = E::ts('The maxiumum age must be unique; the value "%1" is already in use in this Contact Type: %2', [
+      $errors['ageprogress_max_age'] = E::ts('The maxiumum age must be unique; the value "%1" is already in use in the Contact Type: %2', [
         '1' => $submitValues['ageprogress_max_age'],
         '2' => $otherContactType['label'],
       ]);
+    }
+
+    // If this is 'final', find any other already set to 'final'
+    if (CRM_Utils_Array::value('is_ageprogress_final', $submitValues, 0)) {
+      $otherFinalType = \Civi\Api4\AgeprogressContactType::get()
+        ->addWhere('contact_type_id', '!=', $contactTypeId)
+        ->addWhere('is_ageprogress_final', '=', 1)
+        ->execute()
+        ->first();
+      if ($otherFinalType) {
+        // If found, generate an error. Get some info about the other type so
+        // we can report something useful about it.
+        $otherContactType = Civi\Api4\ContactType::get()
+          ->addWhere('id', '=', $otherFinalType['contact_type_id'])
+          ->execute()
+          ->first();
+        $errors['is_ageprogress_final'] = E::ts('Only one contact type can marked "final sub-type"; this setting is already in use in the Contact Type: %1', [
+          '2' => $otherContactType['label'],
+        ]);
+      }
     }
   }
   return empty($errors) ? TRUE : $errors;

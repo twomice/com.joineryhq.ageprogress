@@ -3,10 +3,13 @@
 This extension will automatically progress contacts through a series of sub-types 
 based on age, according to configurable rules. It provides a daily scheduled job 
 to process changes, and performs updates on any new contact or when birth date 
-is changed. It also provides hooks for altering any or all of these:
-* procedure for age calculation;
-* procedure for determining whether to perform updates today;
-* additional actions upon update completion.
+is changed. It also provides the following hooks:
+* civicrm_ageprogress_alterAgeCalcMethod($callback): specify an alternate method 
+  or function for age calculation (default is CiviCRM's native method based 
+  strictly on date of birth).
+* hook_civicrm_ageprogress_alterIsDoUpdate($isDoUpdate): alter the decision to 
+  perform updates at the current time.
+* TBD: define additional actions to perform upon update completion.
 
 The extension is licensed under [GPL-3.0](LICENSE.txt).
 
