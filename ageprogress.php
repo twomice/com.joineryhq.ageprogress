@@ -362,6 +362,7 @@ function _ageprogress_CRM_Admin_Form_ContactType_formRule($submitValues, $submit
     // Find any other contact type that has the same 'max_age' setting.
     $otherMaxAgeType = \Civi\Api4\AgeprogressContactType::get()
       ->addWhere('contact_type_id', '!=', $contactTypeId)
+      ->addWhere('is_ageprogress', '=', 1)
       ->addWhere('ageprogress_max_age', '=', $submitValues['ageprogress_max_age'])
       ->execute()
       ->first();
@@ -382,6 +383,7 @@ function _ageprogress_CRM_Admin_Form_ContactType_formRule($submitValues, $submit
     if (CRM_Utils_Array::value('is_ageprogress_final', $submitValues, 0)) {
       $otherFinalType = \Civi\Api4\AgeprogressContactType::get()
         ->addWhere('contact_type_id', '!=', $contactTypeId)
+        ->addWhere('is_ageprogress', '=', 1)
         ->addWhere('is_ageprogress_final', '=', 1)
         ->execute()
         ->first();

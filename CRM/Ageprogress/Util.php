@@ -73,12 +73,14 @@ class CRM_Ageprogress_Util {
         unset($subTypes[$index]);
       }
     }
+    // If one of the subtypes is current, add it.
     if ($currentSubTypeName) {
       $subTypes[] = $currentSubTypeName;
       $index = array_search($finalSubTypeName, $subTypes);
       unset($subTypes[$index]);
     }
-    else {
+    // If not, add the final sub-type (if any).
+    elseif ($finalSubTypeName) {
       $subTypes[] = $finalSubTypeName;
     }
     return array_unique($subTypes);
