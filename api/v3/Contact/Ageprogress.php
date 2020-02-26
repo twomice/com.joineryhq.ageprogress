@@ -26,23 +26,21 @@ function _civicrm_api3_contact_Ageprogress_spec(&$spec) {
  * @throws API_Exception
  */
 function civicrm_api3_contact_Ageprogress($params) {
-
   $updater = new CRM_Ageprogress_Updater($params);
   if ($updater->isDoUpdate) {
-    $ret = $updater->doUpdate();
+    $updateCounts = $updater->doUpdate();
+
+    $returnString = E::ts('Count of contacts processed: %1; Count of contacts modified: %2; Count of contacts with errors: %3', [
+      1 => $updateCounts['processedCount'],
+      2 => $updateCounts['updateCount'],
+      3 => $updateCounts['errorCount'],
+    ]);
+    if ($updateCounts['errorCount']) {
+      $returnString .= '; ' . E::ts('Check log file for error details.');
+    }
   }
   else {
-    $ret = 'nopers';
+    $returnString = E::ts('It is not time to run updates; no action was taken.');
   }
-
-  $returnValues = $ret;
-//
-//  if (!CRM_Ageprogress_Utils::isDoUpdate()) {
-//
-//  }
-//  $contactGet = civicrm_api3('contact', 'get', $params);
-//  foreach ($contactGet['values'] as $contactc) {
-//  }
-
-  return civicrm_api3_create_success($returnValues, $params, 'Contact', 'Ageprogress');
+  return civicrm_api3_create_success($returnString, $params, 'Contact', 'Ageprogress');
 }

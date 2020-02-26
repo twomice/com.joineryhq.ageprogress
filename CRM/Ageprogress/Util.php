@@ -33,7 +33,7 @@ class CRM_Ageprogress_Util {
 
   public static function nativeCalculateAge($birthDate) {
     $age = CRM_Utils_Date::calculateAge($birthDate);
-    return $age['years'];
+    return CRM_Utils_Array::value('years', $age, 0);
   }
 
   public function calculateAge($birthDate) {
@@ -50,6 +50,7 @@ class CRM_Ageprogress_Util {
    * @return Array Modified list of contact sub-type names.
    */
   public static function alterSubTypes($subTypes, $age) {
+    $subTypes = (array) $subTypes;
     $ageprogressSubTypes = Civi\Api4\AgeprogressContactType::get()
       ->addWhere('is_ageprogress', '=', 1)
       ->addOrderBy('ageprogress_max_age', 'ASC')
@@ -69,21 +70,40 @@ class CRM_Ageprogress_Util {
         $currentSubTypeName = $subTypeName;
       }
       else {
+        // If this sub-type is not current for this contact, remove it.
+        // (Note that if it's the final sub-type we'll be adding it below anyway.
         $index = array_search($subTypeName, $subTypes);
-        unset($subTypes[$index]);
+        if ($index !== FALSE) {
+          unset($subTypes[$index]);
+        }
       }
     }
     // If one of the subtypes is current, add it.
     if ($currentSubTypeName) {
       $subTypes[] = $currentSubTypeName;
-      $index = array_search($finalSubTypeName, $subTypes);
-      unset($subTypes[$index]);
+      // Also remove the Final sub-type, if any.
+      if ($finalSubTypeName) {
+        $index = array_search($finalSubTypeName, $subTypes);
+        if ($index !== FALSE) {
+          unset($subTypes[$index]);
+        }
+      }
     }
     // If not, add the final sub-type (if any).
     elseif ($finalSubTypeName) {
       $subTypes[] = $finalSubTypeName;
     }
-    return array_unique($subTypes);
+    return array_filter(array_unique($subTypes));
+  }
+
+  public static function arrayValuesEqual($a, $b) {
+    $x = array_values($a);
+    $y = array_values($b);
+
+    sort($x);
+    sort($y);
+
+    return $x == $y;
   }
 
 }

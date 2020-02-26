@@ -47,6 +47,14 @@ function ageprogress_civicrm_pre($op, $objectName, $id, &$params) {
       || $op == 'edit'
     )
   ) {
+    if (CRM_Utils_Array::value('ageprogress_processed', $params)) {
+      // If this contact has already been processed for ageprogress sub-types
+      // (as is done in contact.ageprogress API, via CRM_Ageprogress_Updater::doUpdate())
+      // we'll just accept $params at face value, in order to avoid repeating
+      // the calculation of the sub-types. So nothing to do here; return.
+      return;
+    }
+    // If we're still here, we'll need to calculate the sub-types by age.
     $util = CRM_Ageprogress_Util::singleton();
     // Get birthdate from params if given.
     $birthDate = CRM_Utils_Array::value('birth_date', $params);

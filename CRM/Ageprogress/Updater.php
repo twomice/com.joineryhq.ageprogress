@@ -6,25 +6,48 @@
  */
 class CRM_Ageprogress_Updater {
 
-  var $params;
-  var $isDoUpdate;
+  private $params = [];
+  public $isDoUpdate;
 
   public function __construct($params) {
     $params['birth_date'] = ['IS NOT NULL' => 1];
+    $params['contact_type'] = 'Individual';
+    $params['return'] = ["birth_date", "contact_sub_type"];
     $this->params = $params;
     $this->isDoUpdate = $this->isDoUpdate();
   }
 
   public function doUpdate() {
+    $ret = array(
+      'processedCount' => 0,
+      'updateCount' => 0,
+      'errorCount' => 0,
+    );
     $contactGet = civicrm_api3('contact', 'get', $this->params);
-    foreach ($contactGet['values'] as $contact) {
+    $util = CRM_Ageprogress_Util::singleton();
+    foreach ($contactGet['values'] as &$contact) {
+      $ret['processedCount']++;
 
+      $birthDate = CRM_Utils_Array::value('birth_date', $contact);
+      $subTypes = CRM_Utils_Array::value('contact_sub_type', $contact);
+      $age = $util->calculateAge($birthDate);
+
+      $altSubTypes = CRM_Ageprogress_Util::alterSubTypes($subTypes, $age);
+      if (!CRM_Ageprogress_Util::arrayValuesEqual($subTypes, $altSubTypes)) {
+        $contact['ageprogress_processed'] = TRUE;
+        $contact['contact_sub_type'] = $altSubTypes;
+        try {
+          civicrm_api3('contact', 'create', $contact);
+          $ret['updateCount']++;
+        }
+        catch (CiviCRM_API3_Exception $e) {
+          $ret['errorCount']++;
+          CRM_Core_Error::debug_log_message('Ageprogress: encountered error in contact.create API while updating sub-types for contact ID=' . $contact['id'] . '; API error message: ' . $e->getMessage());
+          CRM_Core_Error::debug_var('Ageprogress: contact.create API params', $contact);
+        }
+      }
     }
-    return $contactGet['count'];
-  }
-
-  private function nativeIsDoUpdate() {
-    return TRUE;
+    return $ret;
   }
 
   /**
@@ -34,14 +57,16 @@ class CRM_Ageprogress_Updater {
    * @return Boolean
    */
   public function isDoUpdate() {
-    $isDoUpdate = $this->nativeIsDoUpdate();
+    // By default, we'll always run the update.
+    $isDoUpdate = TRUE;
+    // Allow hook implementations to alter that decision.
     $null = NULL;
     $params = $this->params;
     CRM_Utils_Hook::singleton()->invoke(['isDoUpdate', 'params'], $isDoUpdate, $params, $null,
       $null, $null, $null,
       'civicrm_ageprogress_alterIsDoUpdate'
     );
-
     return $isDoUpdate;
   }
+
 }
