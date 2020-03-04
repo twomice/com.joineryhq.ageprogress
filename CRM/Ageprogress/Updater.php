@@ -47,6 +47,14 @@ class CRM_Ageprogress_Updater {
         }
       }
     }
+
+    $null = NULL;
+    $params = $this->params;
+    CRM_Utils_Hook::singleton()->invoke(['params', 'counts'], $params, $ret, $null,
+      $null, $null, $null,
+      'civicrm_ageprogress_postUpdate'
+    );
+
     return $ret;
   }
 

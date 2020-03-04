@@ -28,15 +28,15 @@ function _civicrm_api3_contact_Ageprogress_spec(&$spec) {
 function civicrm_api3_contact_Ageprogress($params) {
   $updater = new CRM_Ageprogress_Updater($params);
   if ($updater->isDoUpdate) {
-    $updateCounts = $updater->doUpdate();
+    $updateResults = $updater->doUpdate();
 
-    $returnString = E::ts('Count of contacts processed: %1; Count of contacts modified: %2; Count of contacts with errors: %3', [
-      1 => $updateCounts['processedCount'],
-      2 => $updateCounts['updateCount'],
-      3 => $updateCounts['errorCount'],
-    ]);
-    if ($updateCounts['errorCount']) {
-      $returnString .= '; ' . E::ts('Check log file for error details.');
+    $returnString = "";
+    foreach ($updateResults as $label => $value) {
+      $returnString .= "{$label}: $value; ";
+    }
+
+    if ($updateResults['errorCount']) {
+      $returnString .= E::ts('ERRORS DETECTED: check CiviCRM log file for error details.');
     }
   }
   else {
