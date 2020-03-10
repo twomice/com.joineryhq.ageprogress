@@ -13,7 +13,6 @@ class CRM_Ageprogress_Util {
   public function __construct() {
     $callback = $this->ageCalcCallback;
     $null = NULL;
-    $callback = 'self::nativeCalculateAge';
     CRM_Utils_Hook::singleton()->invoke(['callback'], $callback, $null, $null,
       $null, $null, $null,
       'civicrm_ageprogress_alterAgeCalcMethod'
@@ -31,13 +30,14 @@ class CRM_Ageprogress_Util {
     return self::$_singleton;
   }
 
-  public static function nativeCalculateAge($birthDate) {
+  public static function nativeCalculateAge($contact) {
+    $birthDate = CRM_Utils_Array::value('birth_date', $contact);
     $age = CRM_Utils_Date::calculateAge($birthDate);
     return CRM_Utils_Array::value('years', $age, 0);
   }
 
-  public function calculateAge($birthDate) {
-    $age = call_user_func($this->ageCalcCallback, $birthDate);
+  public function calculateAge($contact) {
+    $age = call_user_func($this->ageCalcCallback, $contact);
     return $age;
   }
 

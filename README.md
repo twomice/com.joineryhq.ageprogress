@@ -1,15 +1,46 @@
 # CiviCRM: Sub-type progress by age (com.joineryhq.ageprogress)
 
-This extension will automatically progress contacts through a series of sub-types 
-based on age, according to configurable rules. It provides a daily scheduled job 
-to process changes, and performs updates on any new contact or when birth date 
+This extension will automatically progress contacts through a series of sub-types
+based on age, according to configurable rules. It provides a daily scheduled job
+to process changes, and performs updates on any new contact or when birth date
 is changed. It also provides the following hooks:
-* civicrm_ageprogress_alterAgeCalcMethod($callback): specify an alternate method 
-  or function for age calculation (default is CiviCRM's native method based 
+* hook_civicrm_ageprogress_alterAgeCalcMethod(&$callback): specify an alternate method
+  or function for age calculation (default is CiviCRM's native method based
   strictly on date of birth).
-* hook_civicrm_ageprogress_alterIsDoUpdate($isDoUpdate): alter the decision to 
+
+  Callbacks should have this function signature:
+  ```php
+  /**
+   * Example custom callback to calculate age.
+   *  .
+   * @param $contact
+   *   Array of contact properties, as returned by the Contact.getsingle API (v3). This should
+   *   contain both the 'birthdate' and 'id' properties, but of course you can retrieve more
+   *   (or more recent) values if needed.
+   */
+  function mycallback($contact) {
+    $birthDate = CRM_Utils_Array::value('birth_date', $contact);
+    $customValue = CRM_Utils_Array::value('custom_123', $contact);
+    $age = longExampleFunctionToAdjustAgeBasedOnCustomFieldValue($birthDate, $custom123);
+    return $age;
+  }
+  ```
+* hook_civicrm_ageprogress_alterIsDoUpdate(&$isDoUpdate, $apiParams): alter the decision to
   perform updates at the current time.
-* TBD: define additional actions to perform upon update completion.
+  * $isDoUpdate: boolean, passed by reference;
+  * $apiParams: array of parameters passed to the Contact.ageprogress API.
+* hook_civicrm_ageprogress_postUpdate($apiParams, &$return): additional actions
+  to perform after contact.ageprogress updates.
+  * $apiParams: a copy of the API parameters that were used in the contact.ageprogress
+    API.
+  * $returnArray: an array of results to be returned by the contact.ageprogress API.
+    Results are concatenated into the Contact.ageprogress API results (visible, for
+    exmaple, in Scheduled Job logs). Contact.ageprogress defines these values;
+    hook implmentations may alter, remove, or define additional values:
+    * processedCount: (Integer) number of total contacts processed.
+    * updateCount: (Integer) number of total contacts having their sub-type changed.
+    * errorCount: (Integer) number of contacts for which errors were encountere
+      when attempting to change sub-types.
 
 The extension is licensed under [GPL-3.0](LICENSE.txt).
 

@@ -55,7 +55,6 @@ function ageprogress_civicrm_pre($op, $objectName, $id, &$params) {
       return;
     }
     // If we're still here, we'll need to calculate the sub-types by age.
-    $util = CRM_Ageprogress_Util::singleton();
     // Get birthdate from params if given.
     $birthDate = CRM_Utils_Array::value('birth_date', $params);
     if (!$birthDate && $id) {
@@ -68,7 +67,8 @@ function ageprogress_civicrm_pre($op, $objectName, $id, &$params) {
     // it, so nothing to do. But if we do have it, calculate age and adjust
     // sub-types.
     if ($birthDate) {
-      $age = $util->calculateAge($birthDate);
+      $util = CRM_Ageprogress_Util::singleton();
+      $age = $util->calculateAge($params);
       $params['contact_sub_type'] = CRM_Ageprogress_Util::alterSubTypes($params['contact_sub_type'], $age);
     }
   }
