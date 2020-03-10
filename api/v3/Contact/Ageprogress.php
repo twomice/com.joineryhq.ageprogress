@@ -11,6 +11,12 @@ use CRM_Ageprogress_ExtensionUtil as E;
  */
 function _civicrm_api3_contact_Ageprogress_spec(&$spec) {
   _civicrm_api3_contact_get_spec($spec);
+  $spec['is_force'] = [
+    'options' => [
+      '1' => 'Yes',
+      '0' => 'No',
+    ],
+  ];
 }
 
 /**
