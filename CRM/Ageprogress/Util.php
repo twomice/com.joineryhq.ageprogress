@@ -45,12 +45,49 @@ class CRM_Ageprogress_Util {
    * Remove from and add to the given array of sub-types, based on the given age
    * and the configuration of sub-types having is_ageprogress.
    *
-   * @param Array $subTypes One or more contact sub-type names.
+   * @param Array $subTypesOfContact One or more contact sub-type names; typically
+   *   this is the set of existing sub-types for a certain contact.
    * @param Int $age Age to use in calculating sub-types.
    * @return Array Modified list of contact sub-type names.
    */
-  public static function alterSubTypes($subTypes, $age) {
-    $subTypes = (array) $subTypes;
+  public static function alterSubTypes($subTypesOfContact, $age) {
+    $subTypesOfContact = (array) $subTypesOfContact;
+    $ageprogressSubTypes = self::calculateAgeprogressSubTypes($age);
+
+    foreach ($ageprogressSubTypes as $ageprogressSubType => $isAgeAppropriate) {
+      // If it's age appropriate, add it.
+      if ($isAgeAppropriate) {
+        $subTypesOfContact[] = $ageprogressSubType;
+      }
+      // Otherwise, remove it.
+      else {
+        $index = array_search($ageprogressSubType, $subTypesOfContact);
+        if ($index !== FALSE) {
+          unset($subTypesOfContact[$index]);
+        }
+      }
+    }
+    return array_filter(array_unique($subTypesOfContact));
+  }
+
+  /**
+   * For a given age, get an array of age-progress-managed sub-types; for each
+   * subtype, indicate whether it IS or IS NOT appropriate to the age.
+   *
+   * @param Integer $age
+   * @return Array
+   *   One-dimensional array keyed to sub-type name, with boolean
+   *   indicating whether it is or is not appropriate to the age. Example:
+   *   $age = 3;
+   *   array(
+   *     'child' => TRUE,
+   *     'youth' => FALSE,
+   *     'adult' => FALSE,
+   *   );
+   *   Only one sub-type should be TRUE; all others should be FALSE.
+   */
+  public static function calculateAgeprogressSubTypes($age = 0) {
+    $ret = [];
     $ageprogressSubTypes = Civi\Api4\AgeprogressContactType::get()
       ->addWhere('is_ageprogress', '=', 1)
       ->addOrderBy('ageprogress_max_age', 'ASC')
@@ -66,34 +103,23 @@ class CRM_Ageprogress_Util {
         $finalSubTypeName = $subTypeName;
         continue;
       }
-      if (!$currentSubTypeName & $ageprogressSubType['ageprogress_max_age'] >= $age) {
+      if (!$currentSubTypeName && $ageprogressSubType['ageprogress_max_age'] >= $age) {
         $currentSubTypeName = $subTypeName;
+        $ret[$subTypeName] = TRUE;
       }
       else {
-        // If this sub-type is not current for this contact, remove it.
-        // (Note that if it's the final sub-type we'll be adding it below anyway.
-        $index = array_search($subTypeName, $subTypes);
-        if ($index !== FALSE) {
-          unset($subTypes[$index]);
-        }
+        $ret[$subTypeName] = FALSE;
       }
     }
-    // If one of the subtypes is current, add it.
-    if ($currentSubTypeName) {
-      $subTypes[] = $currentSubTypeName;
-      // Also remove the Final sub-type, if any.
-      if ($finalSubTypeName) {
-        $index = array_search($finalSubTypeName, $subTypes);
-        if ($index !== FALSE) {
-          unset($subTypes[$index]);
-        }
+    if ($finalSubTypeName) {
+      if (empty(array_filter($ret))) {
+        $ret[$finalSubTypeName] = TRUE;
+      }
+      else {
+        $ret[$finalSubTypeName] = FALSE;
       }
     }
-    // If not, add the final sub-type (if any).
-    elseif ($finalSubTypeName) {
-      $subTypes[] = $finalSubTypeName;
-    }
-    return array_filter(array_unique($subTypes));
+    return $ret;
   }
 
   public static function arrayValuesEqual($a, $b) {
