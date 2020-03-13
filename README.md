@@ -3,7 +3,16 @@
 This extension will automatically progress contacts through a series of sub-types
 based on age, according to configurable rules. It provides a daily scheduled job
 to process changes, and performs updates on any new contact or when birth date
-is changed. It also provides the following hooks:
+is changed.
+
+## Usage
+
+This extension provides additional settings on the Edit Contact Type form.
+
+![Screenshot](/images/screenshot.png)
+
+## Developer hooks
+This extension provides the following hooks:
 * hook_civicrm_ageprogress_alterAgeCalcMethod(&$callback): specify an alternate method
   or function for age calculation (default is CiviCRM's native method based
   strictly on date of birth).
@@ -60,7 +69,7 @@ install it with the command-line tool [cv](https://github.com/civicrm/cv).
 
 ```bash
 cd <extension-dir>
-cv dl com.joineryhq.ageprogress@https://github.com/FIXME/com.joineryhq.ageprogress/archive/master.zip
+cv dl com.joineryhq.ageprogress@https://github.com/twomice/com.joineryhq.ageprogress/archive/master.zip
 ```
 
 ## Installation (CLI, Git)
@@ -69,14 +78,6 @@ Sysadmins and developers may clone the [Git](https://en.wikipedia.org/wiki/Git) 
 install it with the command-line tool [cv](https://github.com/civicrm/cv).
 
 ```bash
-git clone https://github.com/FIXME/com.joineryhq.ageprogress.git
+git clone https://github.com/twomice/com.joineryhq.ageprogress.git
 cv en ageprogress
 ```
-
-## Usage
-
-(* FIXME: Where would a new user navigate to get started? What changes would they see? *)
-
-## Known Issues
-
-(* FIXME *)
