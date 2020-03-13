@@ -7,7 +7,9 @@ is changed.
 
 ## Usage
 
-This extension provides additional settings on the Edit Contact Type form.
+This extension provides additional settings on the Edit Contact Type form. These 
+settings are used by the scheduled daily job, and whenever an individual contact's
+birth date is changed.
 
 ![Screenshot](/images/screenshot.png)
 
