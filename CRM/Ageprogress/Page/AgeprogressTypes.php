@@ -1,8 +1,6 @@
 <?php
+use CRM_Ageprogress_ExtensionUtil as E;
 
-/**
- * use CRM_Ageprogress_ExtensionUtil as E;
- */
 class CRM_Ageprogress_Page_AgeprogressTypes extends CRM_Core_Page {
 
   public function run() {

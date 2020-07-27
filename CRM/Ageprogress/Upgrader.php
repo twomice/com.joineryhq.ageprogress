@@ -1,5 +1,5 @@
 <?php
-// use CRM_Ageprogress_ExtensionUtil as E;
+use CRM_Ageprogress_ExtensionUtil as E;
 
 /**
  * Collection of upgrade steps.

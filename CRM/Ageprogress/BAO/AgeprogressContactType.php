@@ -1,8 +1,6 @@
 <?php
+use CRM_Ageprogress_ExtensionUtil as E;
 
-/**
- * use CRM_Ageprogress_ExtensionUtil as E;
- */
 class CRM_Ageprogress_BAO_AgeprogressContactType extends CRM_Ageprogress_DAO_AgeprogressContactType {
 
   /**
