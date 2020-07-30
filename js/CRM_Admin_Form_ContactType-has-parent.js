@@ -12,7 +12,7 @@
         finalTr.hide();
         maxAgeTr.hide();
       }
-    }
+    };
 
     var isAgeprogressFinalChange = function isAgeprogressFinalChange() {
       var tr = $('#ageprogress_max_age').closest('tr');
@@ -22,7 +22,7 @@
       else {
         tr.show();
       }
-    }
+    };
     // Give the bhfe elements table an id so we can handle it later.
     $('input#is_ageprogress').closest('table').attr('id', 'bhfe_table');
 
